@@ -43197,23 +43197,40 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      articles: [],
-      article: {
+      articles: null, // collection of articles (index page)
+      article: { // structure of one article for adding/editing
         id: '',
         title: '',
         body: ''
       },
-      article_id: null,
-      pagination: {},
-      url: '/api/articles',
-      urlToPage: '/api/articles?page=',
-      edit: false
+      article_id: null, // id that will be sent for update route
+      pagination: {}, // pagination and meta stuff here
+      url: '/api/articles', // basic url for every route (difference in verb)
+      urlToPage: '/api/articles?page=', // url to specific page
+      edit: false // decide if form is for add or update an article
     };
   },
+
+  computed: {
+    // This property is created only for watching at once if title or body is changed
+    articleTitleAndBody: function articleTitleAndBody() {
+      return this.article.title + '|' + this.article.body;
+    }
+  },
+  watch: {
+    articleTitleAndBody: function articleTitleAndBody(val) {
+      if (this.edit) {
+        this.liveChange();
+      }
+    }
+  },
+
   created: function created() {
     this.getArticles();
   },
@@ -43223,9 +43240,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     getArticles: function getArticles(page_url) {
       var _this = this;
 
-      page_url = page_url || this.url;
+      page_url = page_url || this.url; //if page url is set, get articles for specific page, otherwise for basic (first one)
       axios.get(page_url).then(function (res) {
         var responseLastPage = res.data.meta.last_page;
+        // If user was on the last page and deleted article, and after that page count decrements, set current page to the new latest 
         if (_this.pagination.current_page > responseLastPage) {
           _this.getArticles(_this.urlToPage + responseLastPage);
         }
@@ -43280,12 +43298,21 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
       if (confirm('Are You Sure?')) {
         axios.delete(this.url + '/' + id).then(function (data) {
-          // alert('Article Removed');
           _this4.getArticles(_this4.urlToPage + _this4.pagination.current_page);
         }).catch(function (err) {
           return console.log(err);
         });
       }
+    },
+    liveChange: function liveChange() {
+      var _this5 = this;
+
+      // Iterate through all articles and find FIRST where iterable article.id === article_id setted when we click on "Edit" some article
+      var thatArticle = this.articles.find(function (article) {
+        return article.id === _this5.article_id;
+      });
+      thatArticle.title = this.article.title;
+      thatArticle.body = this.article.body;
     },
     clearForm: function clearForm() {
       this.edit = false;

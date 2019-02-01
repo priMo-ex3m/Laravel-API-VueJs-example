@@ -3,7 +3,7 @@
 
       <h2>Articles</h2>
 
-      <form @submit.prevent="addOrUpdateArticle" class="mb-3">
+      <form @submit.prevent="addOrUpdateArticle"  class="mb-3">
         <div class="form-group">
           <input type="text" class="form-control" placeholder="Title" v-model="article.title">
         </div>
@@ -48,7 +48,7 @@
 export default {
   data() {
     return {
-      articles: [], // collection of articles (index page)
+      articles: null, // collection of articles (index page)
       article: { // structure of one article for adding/editing
         id: '',
         title: '',
@@ -60,6 +60,19 @@ export default {
       urlToPage : '/api/articles?page=', // url to specific page
       edit: false // decide if form is for add or update an article
     };
+  },
+  computed: {
+    // This property is created only for watching at once if title or body is changed
+    articleTitleAndBody() {
+      return `${this.article.title}|${this.article.body}`;
+    }
+  },
+  watch : {
+    articleTitleAndBody: function(val) {
+      if(this.edit) {
+        this.liveChange();
+      }
+    }
   },
 
   created() {
@@ -131,6 +144,13 @@ export default {
           })
           .catch(err => console.log(err));
       }
+    },
+
+    liveChange() {
+        // Iterate through all articles and find FIRST where iterable article.id === article_id setted when we click on "Edit" some article
+        let thatArticle = this.articles.find(article => article.id === this.article_id); 
+        thatArticle.title = this.article.title;
+        thatArticle.body = this.article.body;
     },
 
     clearForm() {
