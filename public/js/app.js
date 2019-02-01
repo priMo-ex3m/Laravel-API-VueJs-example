@@ -43213,7 +43213,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       pagination: {}, // pagination and meta stuff here
       url: '/api/articles', // basic url for every route (difference in verb)
       urlToPage: '/api/articles?page=', // url to specific page
-      edit: false // decide if form is for add or update an article
+      edit: false, // decide if form is for add or update an article
+      oldArticle: { //if user writes some changes liveChange will trigger, but on reset need to restore values back
+        title: '',
+        body: ''
+      }
     };
   },
 
@@ -43270,7 +43274,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       var _this2 = this;
 
       axios.post(this.url, this.article).then(function (data) {
-        _this2.clearForm();
+        _this2.resetForm();
         _this2.getArticles();
       }).catch(function (err) {
         return console.log(err);
@@ -43287,7 +43291,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       var _this3 = this;
 
       axios.put(this.url + '/' + id, this.article).then(function (data) {
-        _this3.clearForm();
+        _this3.resetForm();
         _this3.getArticles(_this3.urlToPage + _this3.pagination.current_page);
       }).catch(function (err) {
         return console.log(err);
@@ -43308,13 +43312,29 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       var _this5 = this;
 
       // Iterate through all articles and find FIRST where iterable article.id === article_id setted when we click on "Edit" some article
-      var thatArticle = this.articles.find(function (article) {
+      var thisArticle = this.articles.find(function (article) {
         return article.id === _this5.article_id;
       });
-      thatArticle.title = this.article.title;
-      thatArticle.body = this.article.body;
+      //Save old values in temp object, in case user press reset to restore old values
+      if (!this.oldArticle.title) this.oldArticle.title = thisArticle.title;
+      if (!this.oldArticle.body) this.oldArticle.body = thisArticle.body;
+      //Live change
+      thisArticle.title = this.article.title;
+      thisArticle.body = this.article.body;
     },
-    clearForm: function clearForm() {
+    resetUnsavedChanges: function resetUnsavedChanges() {
+      var _this6 = this;
+
+      // Iterate through all articles and find FIRST where iterable article.id === article_id setted when we click on "Edit" some article
+      var thisArticle = this.articles.find(function (article) {
+        return article.id === _this6.article_id;
+      });
+      thisArticle.title = this.oldArticle.title;
+      thisArticle.body = this.oldArticle.body;
+    },
+    resetForm: function resetForm() {
+      this.resetUnsavedChanges();
+      this.oldArticle = {};
       this.edit = false;
       this.article.id = null;
       this.article_id = null;
@@ -43414,7 +43434,7 @@ var render = function() {
           staticClass: "btn btn-danger btn-block mb-2",
           on: {
             click: function($event) {
-              _vm.clearForm()
+              _vm.resetForm()
             }
           }
         },

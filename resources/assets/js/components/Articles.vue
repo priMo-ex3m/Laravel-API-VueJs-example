@@ -13,7 +13,7 @@
         <button type="submit" class="btn btn-light btn-block">Save</button>
       </form>
 
-      <button @click="clearForm()" class="btn btn-danger btn-block mb-2">Reset</button>
+      <button @click="resetForm()" class="btn btn-danger btn-block mb-2">Reset</button>
 
       <nav aria-label="Page navigation example">
           <ul class="pagination">
@@ -58,7 +58,11 @@ export default {
       pagination: {}, // pagination and meta stuff here
       url: '/api/articles', // basic url for every route (difference in verb)
       urlToPage : '/api/articles?page=', // url to specific page
-      edit: false // decide if form is for add or update an article
+      edit: false, // decide if form is for add or update an article
+      oldArticle: { //if user writes some changes liveChange will trigger, but on reset need to restore values back
+        title: '',
+        body: ''
+      }
     };
   },
   computed: {
@@ -113,7 +117,7 @@ export default {
     addArticle() {
         axios.post(this.url, this.article)
           .then(data => {
-            this.clearForm();
+            this.resetForm();
             this.getArticles();
           })
           .catch(err => console.log(err));
@@ -130,7 +134,7 @@ export default {
     updateArticle(id) {
         axios.put(`${this.url}/${id}`, this.article)
           .then(data => {
-            this.clearForm();
+            this.resetForm();
             this.getArticles(this.urlToPage + this.pagination.current_page);
           })
           .catch(err => console.log(err));
@@ -148,12 +152,25 @@ export default {
 
     liveChange() {
         // Iterate through all articles and find FIRST where iterable article.id === article_id setted when we click on "Edit" some article
-        let thatArticle = this.articles.find(article => article.id === this.article_id); 
-        thatArticle.title = this.article.title;
-        thatArticle.body = this.article.body;
+        let thisArticle = this.articles.find(article => article.id === this.article_id);
+        //Save old values in temp object, in case user press reset to restore old values
+        if(!this.oldArticle.title) this.oldArticle.title = thisArticle.title;
+        if(!this.oldArticle.body) this.oldArticle.body = thisArticle.body;
+        //Live change
+        thisArticle.title = this.article.title;
+        thisArticle.body = this.article.body;
     },
 
-    clearForm() {
+    resetUnsavedChanges() {
+        // Iterate through all articles and find FIRST where iterable article.id === article_id setted when we click on "Edit" some article
+        let thisArticle = this.articles.find(article => article.id === this.article_id); 
+        thisArticle.title = this.oldArticle.title;
+        thisArticle.body = this.oldArticle.body;
+    },
+
+    resetForm() {
+      this.resetUnsavedChanges();
+      this.oldArticle = {};
       this.edit = false;
       this.article.id = null;
       this.article_id = null;
