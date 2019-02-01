@@ -34,7 +34,9 @@
       <div class="card card-body mb-2" v-for="article in articles" :key="article.id">
           <h3>{{ article.title }}</h3>
           <p>{{ article.body }}</p>
+
           <hr>
+          
           <button @click="editArticle(article)" class="btn btn-warning mb-2">Edit</button>
           <button @click="deleteArticle(article.id)" class="btn btn-danger">Delete</button>
       </div>
@@ -46,17 +48,17 @@
 export default {
   data() {
     return {
-      articles: [],
-      article: {
+      articles: [], // collection of articles (index page)
+      article: { // structure of one article for adding/editing
         id: '',
         title: '',
         body: ''
       },
-      article_id: null,
-      pagination: {},
-      url: '/api/articles',
-      urlToPage : '/api/articles?page=',
-      edit: false
+      article_id: null, // id that will be sent for update route
+      pagination: {}, // pagination and meta stuff here
+      url: '/api/articles', // basic url for every route (difference in verb)
+      urlToPage : '/api/articles?page=', // url to specific page
+      edit: false // decide if form is for add or update an article
     };
   },
 
@@ -66,10 +68,11 @@ export default {
 
   methods: {
     getArticles(page_url) {
-      page_url = page_url || this.url;
+      page_url = page_url || this.url; //if page url is set, get articles for specific page, otherwise for basic (first one)
       axios.get(page_url)
         .then(res => {
           let responseLastPage = res.data.meta.last_page;
+          // If user was on the last page and deleted article, and after that page count decrements, set current page to the new latest 
           if(this.pagination.current_page > responseLastPage) {
             this.getArticles(this.urlToPage + responseLastPage);
           }
@@ -124,7 +127,6 @@ export default {
       if (confirm('Are You Sure?')) {
         axios.delete(`${this.url}/${id}`)
           .then(data => {
-            // alert('Article Removed');
             this.getArticles(this.urlToPage + this.pagination.current_page);
           })
           .catch(err => console.log(err));
@@ -141,37 +143,3 @@ export default {
   }
 };
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--     addOrUpdateArticle() {
-      if (this.edit === false) {
-        // Add
-        axios.post(this.url, this.article)
-          .then(data => {
-            this.clearForm();
-            // alert('Article Added');
-            this.getArticles();
-          })
-          .catch(err => console.log(err));
-      } else {
-        // Update
-        axios.put(this.url, this.article)
-          .then(data => {
-            this.clearForm();
-            // alert('Article Updated');
-            this.getArticles(this.urlToPage + this.pagination.current_page);
-          })
-          .catch(err => console.log(err));
-      }
-    } -->
