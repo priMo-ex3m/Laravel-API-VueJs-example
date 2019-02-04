@@ -48,7 +48,7 @@
 export default {
   data() {
     return {
-      articles: null, // collection of articles (index page)
+      articles: [], // collection of articles (index page)
       article: { // structure of one article for adding/editing
         id: '',
         title: '',
@@ -59,16 +59,13 @@ export default {
       url: '/api/articles', // basic url for every route (difference in verb)
       urlToPage : '/api/articles?page=', // url to specific page
       edit: false, // decide if form is for add or update an article
-      oldArticle: { //if user writes some changes liveChange will trigger, but on reset need to restore values back
-        title: '',
-        body: ''
-      }
+      oldArticle: {} //if user writes some changes liveChange will trigger, but on reset need to restore values back
     };
   },
   computed: {
     // This property is created only for watching at once if title or body is changed
     articleTitleAndBody() {
-      return `${this.article.title}|${this.article.body}`;
+        return `${this.article.title}|${this.article.body}`;
     }
   },
   watch : {
@@ -125,10 +122,8 @@ export default {
 
     editArticle(article) {
       this.edit = true;
-      this.article.id = article.id;
       this.article_id = article.id;
-      this.article.title = article.title;
-      this.article.body = article.body;
+      this.article = article;
     },
 
     updateArticle(id) {
@@ -162,20 +157,20 @@ export default {
     },
 
     resetUnsavedChanges() {
-        // Iterate through all articles and find FIRST where iterable article.id === article_id setted when we click on "Edit" some article
-        let thisArticle = this.articles.find(article => article.id === this.article_id); 
-        thisArticle.title = this.oldArticle.title;
-        thisArticle.body = this.oldArticle.body;
+        if(this.edit){
+          // Iterate through all articles and find FIRST where iterable article.id === article_id setted when we click on "Edit" some article
+          let thisArticle = this.articles.find(article => article.id === this.article_id); 
+          thisArticle.title = this.oldArticle.title;
+          thisArticle.body = this.oldArticle.body;
+        }
+        this.oldArticle = {};
     },
 
     resetForm() {
       this.resetUnsavedChanges();
-      this.oldArticle = {};
       this.edit = false;
-      this.article.id = null;
       this.article_id = null;
-      this.article.title = '';
-      this.article.body = '';
+      this.article = {};
     }
   }
 };

@@ -43203,7 +43203,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      articles: null, // collection of articles (index page)
+      articles: [], // collection of articles (index page)
       article: { // structure of one article for adding/editing
         id: '',
         title: '',
@@ -43214,10 +43214,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       url: '/api/articles', // basic url for every route (difference in verb)
       urlToPage: '/api/articles?page=', // url to specific page
       edit: false, // decide if form is for add or update an article
-      oldArticle: { //if user writes some changes liveChange will trigger, but on reset need to restore values back
-        title: '',
-        body: ''
-      }
+      oldArticle: {} //if user writes some changes liveChange will trigger, but on reset need to restore values back
     };
   },
 
@@ -43282,10 +43279,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     },
     editArticle: function editArticle(article) {
       this.edit = true;
-      this.article.id = article.id;
       this.article_id = article.id;
-      this.article.title = article.title;
-      this.article.body = article.body;
+      this.article = article;
     },
     updateArticle: function updateArticle(id) {
       var _this3 = this;
@@ -43325,21 +43320,21 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     resetUnsavedChanges: function resetUnsavedChanges() {
       var _this6 = this;
 
-      // Iterate through all articles and find FIRST where iterable article.id === article_id setted when we click on "Edit" some article
-      var thisArticle = this.articles.find(function (article) {
-        return article.id === _this6.article_id;
-      });
-      thisArticle.title = this.oldArticle.title;
-      thisArticle.body = this.oldArticle.body;
+      if (this.edit) {
+        // Iterate through all articles and find FIRST where iterable article.id === article_id setted when we click on "Edit" some article
+        var thisArticle = this.articles.find(function (article) {
+          return article.id === _this6.article_id;
+        });
+        thisArticle.title = this.oldArticle.title;
+        thisArticle.body = this.oldArticle.body;
+      }
+      this.oldArticle = {};
     },
     resetForm: function resetForm() {
       this.resetUnsavedChanges();
-      this.oldArticle = {};
       this.edit = false;
-      this.article.id = null;
       this.article_id = null;
-      this.article.title = '';
-      this.article.body = '';
+      this.article = {};
     }
   }
 });
